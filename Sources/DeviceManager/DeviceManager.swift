@@ -1,8 +1,8 @@
 import UIKit
 import Combine
 
-class DeviceManager: ObservableObject {
-    static let shared = DeviceManager()
+open class DeviceManager: ObservableObject {
+    public static let shared = DeviceManager()
 
     private let device = UIDevice.current
     private var cancellables = Set<AnyCancellable>()
@@ -10,22 +10,22 @@ class DeviceManager: ObservableObject {
     // MARK: - Combine Publishers
 
     /// Publisher for device changes
-    @Published var currentDevice: Device
+    @Published public var currentDevice: Device
 
     /// Publisher for orientation changes
-    let orientationPublisher: AnyPublisher<UIDeviceOrientation, Never>
+    public let orientationPublisher: AnyPublisher<UIDeviceOrientation, Never>
 
     /// Publisher for battery level changes
-    let batteryLevelPublisher: AnyPublisher<Float, Never>
+    public let batteryLevelPublisher: AnyPublisher<Float, Never>
 
     /// Publisher for battery state changes
-    let batteryStatePublisher: AnyPublisher<UIDevice.BatteryState, Never>
+    public let batteryStatePublisher: AnyPublisher<UIDevice.BatteryState, Never>
 
     /// Publisher for Safe Area changes
-    let safeAreaPublisher: AnyPublisher<UIEdgeInsets, Never>
+    public let safeAreaPublisher: AnyPublisher<UIEdgeInsets, Never>
 
     /// Combined publisher for all device changes
-    let deviceChangesPublisher: AnyPublisher<Device, Never>
+    public let deviceChangesPublisher: AnyPublisher<Device, Never>
 
     private let orientationSubject = PassthroughSubject<UIDeviceOrientation, Never>()
     private let batteryLevelSubject = PassthroughSubject<Float, Never>()
@@ -72,32 +72,32 @@ class DeviceManager: ObservableObject {
     // MARK: - Public Methods
 
     /// Get current device information
-    func getCurrentDevice() -> Device {
+    public func getCurrentDevice() -> Device {
         return currentDevice
     }
 
     /// Get device description summary
-    func getDeviceDescription() -> String {
+    public func getDeviceDescription() -> String {
         return currentDevice.description
     }
 
     /// Check if device is iPhone
-    func isiPhone() -> Bool {
+    public func isiPhone() -> Bool {
         return device.userInterfaceIdiom == .phone
     }
 
     /// Check if device is iPad
-    func isiPad() -> Bool {
+    public func isiPad() -> Bool {
         return device.userInterfaceIdiom == .pad
     }
 
     /// Get screen size in points
-    func getScreenSize() -> CGSize {
+    public func getScreenSize() -> CGSize {
         return UIScreen.main.bounds.size
     }
 
     /// Get Safe Area insets for current window
-    func getSafeAreaInsets() -> UIEdgeInsets {
+    public func getSafeAreaInsets() -> UIEdgeInsets {
         if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
            let window = windowScene.windows.first {
             return window.safeAreaInsets
@@ -107,7 +107,7 @@ class DeviceManager: ObservableObject {
     }
 
     /// Publisher for filtered orientation changes (only significant ones)
-    var significantOrientationChanges: AnyPublisher<UIDeviceOrientation, Never> {
+    public var significantOrientationChanges: AnyPublisher<UIDeviceOrientation, Never> {
         return orientationPublisher
             .filter { orientation in
                 // Filter only portrait and landscape orientations
@@ -123,7 +123,7 @@ class DeviceManager: ObservableObject {
     }
 
     /// Publisher for critical battery changes
-    var criticalBatteryChanges: AnyPublisher<Float, Never> {
+    public var criticalBatteryChanges: AnyPublisher<Float, Never> {
         return batteryLevelPublisher
             .filter { level in
                 level <= 0.2 // Notify when battery is 20% or lower
@@ -133,7 +133,7 @@ class DeviceManager: ObservableObject {
     }
 
     /// Publisher for charging status changes
-    var chargingStatusChanges: AnyPublisher<Bool, Never> {
+    public var chargingStatusChanges: AnyPublisher<Bool, Never> {
         return batteryStatePublisher
             .map { state in
                 return state == .charging
@@ -251,21 +251,21 @@ class DeviceManager: ObservableObject {
 extension DeviceManager {
 
     /// Create debounced publisher for orientation changes (avoid frequent updates)
-    func debouncedOrientationChanges(for interval: TimeInterval = 0.3) -> AnyPublisher<UIDeviceOrientation, Never> {
+    public func debouncedOrientationChanges(for interval: TimeInterval = 0.3) -> AnyPublisher<UIDeviceOrientation, Never> {
         return orientationPublisher
             .debounce(for: .seconds(interval), scheduler: DispatchQueue.main)
             .eraseToAnyPublisher()
     }
 
     /// Create throttled publisher for battery changes (limit update frequency)
-    func throttledBatteryChanges(for interval: TimeInterval = 1.0) -> AnyPublisher<Float, Never> {
+    public func throttledBatteryChanges(for interval: TimeInterval = 1.0) -> AnyPublisher<Float, Never> {
         return batteryLevelPublisher
             .throttle(for: .seconds(interval), scheduler: DispatchQueue.main, latest: true)
             .eraseToAnyPublisher()
     }
 
     /// Get publisher for device updates at specified intervals
-    func deviceUpdates(every interval: TimeInterval = 1.0) -> AnyPublisher<Device, Never> {
+    public func deviceUpdates(every interval: TimeInterval = 1.0) -> AnyPublisher<Device, Never> {
         return Timer.publish(every: interval, on: .main, in: .common)
             .autoconnect()
             .map { _ in Self.createDevice() }

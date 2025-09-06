@@ -1,6 +1,6 @@
 import UIKit
 
-struct Device {
+public struct Device {
     let name: String
     let model: String
     let systemName: String
